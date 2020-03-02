@@ -28,6 +28,11 @@ MACHINES = {
             :dfile => home + '/VirtualBox VMs/sata4.vdi',
             :size => 1024,
             :port => 4
+        },
+        :sata5 => {
+            :dfile => home + '/VirtualBox VMs/sata5.vdi',
+            :size => 250,
+            :port => 5
         }
     }
   },
