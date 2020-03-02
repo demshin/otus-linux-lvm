@@ -4,7 +4,7 @@ home = ENV['HOME']
 ENV["LC_ALL"] = "en_US.UTF-8"
 
 MACHINES = {
-  :lvm => {
+  :raid => {
         :box_name => "centos/7",
         :box_version => "1804.02",
         :ip_addr => '192.168.11.101',
@@ -74,6 +74,18 @@ Vagrant.configure("2") do |config|
             mkdir -p ~root/.ssh
             cp ~vagrant/.ssh/auth* ~root/.ssh
             yum install -y mdadm smartmontools hdparm gdisk
+            yes | mdadm --create --verbose /dev/md0 -l 5 -n 5 /dev/sd{b,c,d,e,f}
+            echo "DEVICE partitions" > /etc/mdadm.conf
+            mdadm --detail --scan --verbose | awk '/ARRAY/ {print}' >> /etc/mdadm.conf
+            parted -s /dev/md0 mklabel gpt
+            parted /dev/md0 mkpart primary ext4 0% 20%
+            parted /dev/md0 mkpart primary ext4 20% 40%
+            parted /dev/md0 mkpart primary ext4 40% 60%
+            parted /dev/md0 mkpart primary ext4 60% 80%
+            parted /dev/md0 mkpart primary ext4 80% 100%
+            for i in $(seq 1 5); do sudo mkfs.ext4 /dev/md0p$i; done
+            mkdir -p /raid/part{1,2,3,4,5}
+            for i in $(seq 1 5); do mount /dev/md0p$i /raid/part$i; done
           SHELL
   
         end
